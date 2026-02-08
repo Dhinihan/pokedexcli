@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/Dhinihan/pokedexcli/internal/pokeapicache"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -82,9 +84,10 @@ func TestGetLocations(t *testing.T) {
 				ts.Close()
 			})
 
-			pa := &pokeapi{
+			pa := &Api{
 				ts.Client(),
 				ts.URL,
+				pokeapicache.NewCache(1 * time.Second),
 			}
 
 			locs, err := pa.GetLocation(tc.limit, tc.offset)

@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func NewCache(ttl time.Duration) *cache {
-	c := cache{
+func NewCache(ttl time.Duration) *Cache {
+	c := Cache{
 		registros: map[string]cacheRegistro{},
 	}
 	c.varredura(ttl)
@@ -19,12 +19,12 @@ type cacheRegistro struct {
 	valor   []byte
 }
 
-type cache struct {
+type Cache struct {
 	registros map[string]cacheRegistro
 	mutex     sync.Mutex
 }
 
-func (c *cache) Add(chave string, valor []byte) {
+func (c *Cache) Add(chave string, valor []byte) {
 	registro := cacheRegistro{
 		criacao: time.Now(),
 		valor:   valor,
@@ -34,14 +34,14 @@ func (c *cache) Add(chave string, valor []byte) {
 	c.mutex.Unlock()
 }
 
-func (c *cache) Get(chave string) ([]byte, bool) {
+func (c *Cache) Get(chave string) ([]byte, bool) {
 	c.mutex.Lock()
 	registro, ok := c.registros[chave]
 	c.mutex.Unlock()
 	return registro.valor, ok
 }
 
-func (c *cache) varredura(duracao time.Duration) {
+func (c *Cache) varredura(duracao time.Duration) {
 	ticker := time.Tick(duracao)
 	go func() {
 		for now := range ticker {
@@ -54,4 +54,3 @@ func (c *cache) varredura(duracao time.Duration) {
 		}
 	}()
 }
-

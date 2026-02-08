@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/Dhinihan/pokedexcli/internal/pokeapi"
 )
 
 type state struct {
@@ -41,8 +39,7 @@ func (s *state) offset() int {
 func commandMap(c config) error {
 	s.start()
 	s.next()
-	p := pokeapi.NewPokeapi()
-	locations, err := p.GetLocation(s.limit, s.offset())
+	locations, err := c.client.GetLocation(s.limit, s.offset())
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -55,8 +52,7 @@ func commandMap(c config) error {
 func commandMapBack(c config) error {
 	s.start()
 	s.previous()
-	p := pokeapi.NewPokeapi()
-	locations, err := p.GetLocation(s.limit, s.offset())
+	locations, err := c.client.GetLocation(s.limit, s.offset())
 	if err != nil {
 		fmt.Println(err.Error())
 	}

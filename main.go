@@ -1,6 +1,9 @@
 package main
 
+import "github.com/Dhinihan/pokedexcli/internal/pokeapi"
+
 type config struct {
+	client *pokeapi.Api
 }
 
 func main() {
@@ -9,5 +12,7 @@ func main() {
 }
 
 func NewConfig() config {
-	return config{}
+	return config{
+		client: pokeapi.NewPokeapi(),
+	}
 }

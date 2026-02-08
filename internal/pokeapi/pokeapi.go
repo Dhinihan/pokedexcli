@@ -6,6 +6,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/Dhinihan/pokedexcli/internal/pokeapicache"
 )
 
 const realUrl = "https://pokeapi.co/api/v2/"
@@ -15,9 +18,10 @@ type Location struct {
 	URL  string `json:"url"`
 }
 
-type pokeapi struct {
+type Api struct {
 	client  *http.Client
 	baseUrl string
+	cache   *pokeapicache.Cache
 }
 
 type LocationResponse struct {
@@ -27,16 +31,17 @@ type LocationResponse struct {
 	Results  []Location `json:"results"`
 }
 
-func NewPokeapi() *pokeapi {
-	return &pokeapi{
+func NewPokeapi() *Api {
+	return &Api{
 		client:  http.DefaultClient,
 		baseUrl: realUrl,
+		cache:   pokeapicache.NewCache(1 * time.Hour),
 	}
 }
 
 type queryParams map[string]string
 
-func (p *pokeapi) GetLocation(limit int, offset int) ([]Location, error) {
+func (p *Api) GetLocation(limit int, offset int) ([]Location, error) {
 	params := queryParams{
 		"limit":  fmt.Sprintf("%d", limit),
 		"offset": fmt.Sprintf("%d", offset),
@@ -50,22 +55,31 @@ func (p *pokeapi) GetLocation(limit int, offset int) ([]Location, error) {
 	return lr.Results, nil
 }
 
-func getRequest[T any](p *pokeapi, path string, qp queryParams, dataContainer *T) error {
+func getRequest[T any](p *Api, path string, qp queryParams, dataContainer *T) error {
 	fullUrl := p.baseUrl + "/" + path + qp.String()
 
-	request, err := http.NewRequest(http.MethodGet, fullUrl, nil)
-	if err != nil {
-		return fmt.Errorf("Erro ao montar request: %w", err)
-	}
-	res, err := p.client.Do(request)
+	var data []byte
+	data, ok := p.cache.Get(fullUrl)
+	if !ok {
+		request, err := http.NewRequest(http.MethodGet, fullUrl, nil)
+		if err != nil {
+			return fmt.Errorf("Erro ao montar request: %w", err)
+		}
+		res, err := p.client.Do(request)
 
-	if err != nil {
-		return fmt.Errorf("Erro ao chamar GET %s: %w", fullUrl, err)
-	}
-	defer res.Body.Close()
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return fmt.Errorf("Erro ao processar GET %s: %w", fullUrl, err)
+		if err != nil {
+			return fmt.Errorf("Erro ao chamar GET %s: %w", fullUrl, err)
+		}
+		defer res.Body.Close()
+		data, err = io.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("Erro ao processar GET %s: %w", fullUrl, err)
+		}
+		p.cache.Add(fullUrl, data)
+		fmt.Printf("gravou no cache %s\n", fullUrl)
+
+	} else {
+		fmt.Println("Usou o cache!")
 	}
 	if err := json.Unmarshal(data, dataContainer); err != nil {
 		return fmt.Errorf("Erro ao decodificar json %s: %w", data, err)
