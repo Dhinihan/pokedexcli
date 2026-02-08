@@ -11,7 +11,10 @@ import (
 )
 
 func locationsToBytes(locs []Location) ([]byte, error) {
-	data, err := json.Marshal(locs)
+	response := LocationResponse{
+		Results: locs,
+	}
+	data, err := json.Marshal(response)
 	if err != nil {
 		return []byte{}, fmt.Errorf("Error parsing locations to json: %w", err)
 	}
