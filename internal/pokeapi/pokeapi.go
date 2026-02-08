@@ -20,6 +20,13 @@ type pokeapi struct {
 	baseUrl string
 }
 
+type LocationResponse struct {
+	Count    int        `json:"count"`
+	Next     string     `json:"next"`
+	Previous any        `json:"previous"`
+	Results  []Location `json:"results"`
+}
+
 func NewPokeapi() *pokeapi {
 	return &pokeapi{
 		client:  http.DefaultClient,
@@ -34,16 +41,16 @@ func (p *pokeapi) GetLocation(limit int, offset int) ([]Location, error) {
 		"limit":  fmt.Sprintf("%d", limit),
 		"offset": fmt.Sprintf("%d", offset),
 	}
-	var locations []Location
-	err := getRequest(p, "location-area", params, &locations)
+	var lr LocationResponse
+	err := getRequest(p, "location-area", params, &lr)
 	if err != nil {
 		return []Location{}, fmt.Errorf("Error getting location: %w", err)
 	}
 
-	return locations, nil
+	return lr.Results, nil
 }
 
-func getRequest[T any](p *pokeapi, path string, qp queryParams, dataContainer *[]T) error {
+func getRequest[T any](p *pokeapi, path string, qp queryParams, dataContainer *T) error {
 	fullUrl := p.baseUrl + "/" + path + qp.String()
 
 	request, err := http.NewRequest(http.MethodGet, fullUrl, nil)
