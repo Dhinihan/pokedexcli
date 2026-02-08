@@ -44,21 +44,6 @@ func NewConfig() config {
 	return config{}
 }
 
-func commandExit(config) error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp(config) error {
-	fmt.Print("Welcome to the Pokedex!\nUsage:\n\n")
-	comandos := getCommands()
-	for nome, comando := range comandos {
-		fmt.Printf("%s:	%s\n", nome, comando.description)
-	}
-	return nil
-}
-
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
