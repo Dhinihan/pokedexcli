@@ -69,9 +69,9 @@ func (p *Api) GetLocation(limit int, offset int) ([]Location, error) {
 	return lr.Results, nil
 }
 
-func (p *Api) GetLocationDetails(l Location) (LocationDetailsResponse, error) {
+func (p *Api) GetLocationDetails(name string) (LocationDetailsResponse, error) {
 	var ldr LocationDetailsResponse
-	err := getRequest(p, fmt.Sprintf("location-area/%s", l.Name), "", &ldr)
+	err := getRequest(p, fmt.Sprintf("location-area/%s", name), "", &ldr)
 
 	if err != nil {
 		return LocationDetailsResponse{}, fmt.Errorf("Error getting location: %w", err)

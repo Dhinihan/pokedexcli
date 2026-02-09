@@ -36,7 +36,7 @@ func (s *state) offset() int {
 	return (s.page - 1) * s.limit
 }
 
-func commandMap(c config) error {
+func commandMap(c config, args []string) error {
 	s.start()
 	s.next()
 	locations, err := c.client.GetLocation(s.limit, s.offset())
@@ -49,7 +49,7 @@ func commandMap(c config) error {
 	return nil
 }
 
-func commandMapBack(c config) error {
+func commandMapBack(c config, args []string) error {
 	s.start()
 	s.previous()
 	locations, err := c.client.GetLocation(s.limit, s.offset())

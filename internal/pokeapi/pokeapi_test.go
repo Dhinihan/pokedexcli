@@ -39,8 +39,8 @@ func locationDetailsToBytes(pl []Pokemon, loc Location) ([]byte, error) {
 
 func TestGetLocationDetails(t *testing.T) {
 	pList1 := []Pokemon{}
-	pList2 := []Pokemon{Pokemon{"Bulbasauro", "url1"}}
-	pList3 := []Pokemon{Pokemon{"Charmander", "url4"}, Pokemon{"Squirtle", "url7"}}
+	pList2 := []Pokemon{{"Bulbasauro", "url1"}}
+	pList3 := []Pokemon{{"Charmander", "url4"}, {"Squirtle", "url7"}}
 	loc1 := Location{"local1", "url7"}
 	loc2 := Location{"local2", "url8"}
 	loc3 := Location{"local3", "url9"}
@@ -83,7 +83,7 @@ func TestGetLocationDetails(t *testing.T) {
 				pokeapicache.NewCache(1 * time.Second),
 			}
 
-			details, err := pa.GetLocationDetails(tc.inLoc)
+			details, err := pa.GetLocationDetails(tc.inLoc.Name)
 			if err != nil {
 				tt.Errorf("UnexpectedError: %s", err.Error())
 			}
