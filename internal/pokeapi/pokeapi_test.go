@@ -23,6 +23,85 @@ func locationsToBytes(locs []Location) ([]byte, error) {
 	return data, nil
 }
 
+func locationDetailsToBytes(pl []Pokemon, loc Location) ([]byte, error) {
+	encounters := []PokemonEncounter{}
+	for _, p := range pl {
+		encounters = append(encounters, PokemonEncounter{p})
+	}
+	response := LocationDetailsResponse{loc.Name, loc.URL, encounters}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		return []byte{}, fmt.Errorf("Error parsing location detail to json: %w", err)
+	}
+	return data, nil
+}
+
+func TestGetLocationDetails(t *testing.T) {
+	pList1 := []Pokemon{}
+	pList2 := []Pokemon{Pokemon{"Bulbasauro", "url1"}}
+	pList3 := []Pokemon{Pokemon{"Charmander", "url4"}, Pokemon{"Squirtle", "url7"}}
+	loc1 := Location{"local1", "url7"}
+	loc2 := Location{"local2", "url8"}
+	loc3 := Location{"local3", "url9"}
+	type testCase struct {
+		inLoc    Location
+		expPList []Pokemon
+	}
+	testCases := []testCase{
+		{loc1, pList1}, {loc2, pList2}, {loc3, pList3},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.inLoc.Name, func(tt *testing.T) {
+			tt.Parallel()
+			hf := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				expPath := "/location-area/" + tc.inLoc.Name
+				if r.URL.Path != expPath {
+					tt.Errorf(
+						"Chamou %s ao invés de %s",
+						r.URL.Path,
+						expPath,
+					)
+				}
+				data, err := locationDetailsToBytes(tc.expPList, tc.inLoc)
+				if err != nil {
+					fmt.Printf("Warning: %s", err.Error())
+				}
+				_, err = w.Write(data)
+				if err != nil {
+					fmt.Printf("Warning: %s", err.Error())
+				}
+			})
+			ts := httptest.NewServer(hf)
+			tt.Cleanup(func() {
+				ts.Close()
+			})
+
+			pa := &Api{
+				ts.Client(),
+				ts.URL,
+				pokeapicache.NewCache(1 * time.Second),
+			}
+
+			details, err := pa.GetLocationDetails(tc.inLoc)
+			if err != nil {
+				tt.Errorf("UnexpectedError: %s", err.Error())
+			}
+			if len(details.PokemonEncounters) != len(tc.expPList) {
+				tt.Errorf(
+					"Expected %d encounters, received %d",
+					len(details.PokemonEncounters),
+					len(tc.expPList),
+				)
+			}
+			for i, p := range details.PokemonEncounters {
+				if diff := cmp.Diff(p.Pokemon, tc.expPList[i]); diff != "" {
+					tt.Errorf("mismatch pokémon:\n%s", diff)
+				}
+			}
+		})
+	}
+}
 func TestGetLocations(t *testing.T) {
 	loc1 := Location{
 		Name: "Teste",
