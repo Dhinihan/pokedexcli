@@ -16,3 +16,7 @@ func NewConfig() config {
 		client: pokeapi.NewPokeapi(),
 	}
 }
+
+// Fórmula de captura
+//	const k = 0.00377619213
+//	return 0.99*math.Exp(-k*x) + 0.01
