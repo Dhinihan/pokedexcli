@@ -11,8 +11,8 @@ func TestGetPokemonDetails(t *testing.T) {
 		poke PokemonDetails
 	}
 	testCases := []testCase{
-		{"ceruledge", PokemonDetails{"ceruledge", "url1", 321}},
-		{"armarouge", PokemonDetails{"armarouge", "url2", 123}},
+		{"ceruledge", NewPokemon("ceruledge")},
+		{"armarouge", NewPokemon("armarouge")},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(tt *testing.T) {

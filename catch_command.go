@@ -25,6 +25,7 @@ func commandCatch(c config, args []string) error {
 
 	if pegou {
 		fmt.Printf("%s was caught\n", pName)
+		fmt.Println("You may now inspect it with the inspect command.")
 		c.pokeDex.Add(pokemon)
 	} else {
 		fmt.Printf("%s escaped!\n", pName)
